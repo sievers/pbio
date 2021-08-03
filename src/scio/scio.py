@@ -4,7 +4,7 @@ import bz2
 import gzip
 import multiprocessing
 import time
-    
+import zipfile    
 
 class scio:
     def __init__(self,fname,arr=None,status='w',compress=None,diff=False):
@@ -165,6 +165,26 @@ def _read_file_as_string(fname):
     mystr=f.read()
     f.close()
     return mystr
+
+def read_from_archive(fname,arcname,strict=False):
+    if isinstance(arcname,str):
+        f=zipfile.ZipFile(arcname)
+    else:
+        f=arcname
+    fname=f.namelist()[0]+fname
+    mystr=None
+    if fname in f.namelist():
+        mystr=f.read(fname)
+    elif fname+'.bz2' in f.namelist():
+        tmp=f.read(fname+'.bz2')
+        mystr=bz2.decompress(tmp)
+    elif fname+'.gz' in f.namelist():
+        tmp=f.read(fname+'.bz2')
+        mystr=gzip.decompress(tmp)
+    if mystr is None:
+        print(fname,' not found in ',arcname)
+        return None
+    return _read_from_string(mystr)
 
 def read(fname,strict=False):
     if True:
